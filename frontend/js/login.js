@@ -12,13 +12,13 @@ const loginForm = document.getElementById("loginForm");
 const loginBtn = document.getElementById("loginBtn");
 const btnText = document.getElementById("btnText");
 const passwordField = document.getElementById("password");
-const toggleBtn = document.getElementById("togglePassword");
+const passwordToggleBtn = document.getElementById("togglePassword");
 const eyeIcon = document.getElementById("eyeIcon");
 
 // -------------------------
 // Password Toggle
 // -------------------------
-toggleBtn.addEventListener("click", () => {
+passwordToggleBtn.addEventListener("click", () => {
   const isPassword = passwordField.type === "password";
   passwordField.type = isPassword ? "text" : "password";
   eyeIcon.setAttribute("data-lucide", isPassword ? "eye-off" : "eye");
@@ -29,11 +29,11 @@ toggleBtn.addEventListener("click", () => {
 // Login Form Submit
 // -------------------------
 loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
   if (!loginForm.checkValidity()) {
     return; // validation.js will handle UI
   }
-
-  e.preventDefault();
 
   const email = document.getElementById("email")?.value;
   const password = passwordField?.value;
