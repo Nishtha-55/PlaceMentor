@@ -180,6 +180,9 @@ export const uploadResume = async (req, res) => {
     if (aiResult.branch) student.branch = aiResult.branch;
     if (aiResult.cgpa !== undefined && aiResult.cgpa !== null) student.cgpa = aiResult.cgpa;
     
+    // Direct persistence of the uploaded PDF file as base64
+    student.resume = `data:application/pdf;base64,${req.file.buffer.toString("base64")}`;
+    
     // Merge skills (unique)
     if (aiResult.skills && aiResult.skills.length > 0) {
        const mergedSkills = new Set([...student.skills, ...aiResult.skills]);
