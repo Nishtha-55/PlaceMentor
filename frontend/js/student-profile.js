@@ -13,8 +13,10 @@ function getSession() {
 
 const session = getSession();
 if (!session) {
-    alert("Login required!");
-    window.location.href = "../login.html";
+    showToast("Login required!", "error");
+    setTimeout(() => {
+        window.location.href = "../login.html";
+    }, 1500);
 }
 
 const { token, user } = session;
@@ -106,8 +108,8 @@ window.removeSkill = function (i) {
 // ============================
 resumeInput?.addEventListener("change", async (e) => {
     const file = e.target.files[0];
-    if (!file || file.type !== "application/pdf") return alert("Only PDFs allowed!");
-    if (file.size > 2 * 1024 * 1024) return alert("Max 2MB");
+    if (!file || file.type !== "application/pdf") return showToast("Only PDFs allowed!", "error");
+    if (file.size > 2 * 1024 * 1024) return showToast("Max 2MB", "error");
 
     const dropArea = document.getElementById("resumeDropArea");
     const originalHTML = dropArea.innerHTML;
@@ -166,11 +168,11 @@ resumeInput?.addEventListener("change", async (e) => {
         };
         reader.readAsDataURL(file);
 
-        alert("🎯 AI successfully parsed your resume and auto-populated your profile details!");
+        showToast("🎯 AI successfully parsed your resume and auto-populated details!", "success");
 
     } catch (err) {
         console.error("AI Parser Error:", err);
-        alert("❌ AI parsing failed: " + err.message);
+        showToast("❌ AI parsing failed: " + err.message, "error");
     } finally {
         dropArea.innerHTML = originalHTML;
         dropArea.style.pointerEvents = "auto";
@@ -224,7 +226,7 @@ async function loadProfile() {
         }
     } catch (err) {
         console.error(err);
-        alert("Failed to load profile");
+        showToast("Failed to load profile", "error");
     } finally {
         updateCompletion();
     }
@@ -259,10 +261,10 @@ saveBtn?.addEventListener("click", async () => {
 
         if (!res.ok) throw new Error("Save failed");
 
-        alert("✅ Profile saved successfully!");
+        showToast("✅ Profile saved successfully!", "success");
     } catch (err) {
         console.error(err);
-        alert("❌ Save failed");
+        showToast("❌ Save failed", "error");
     } finally {
         saveBtn.innerText = "Save Profile Changes";
         saveBtn.disabled = false;
@@ -275,3 +277,59 @@ saveBtn?.addEventListener("click", async () => {
 document.addEventListener("DOMContentLoaded", () => {
     loadProfile();
 });
+
+// ============================
+// PREMIUM TOAST SYSTEM
+// ============================
+function showToast(message, type = "success") {
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "fixed top-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full px-4 md:px-0";
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement("div");
+    const isSuccess = type === "success";
+    
+    toast.className = `flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md shadow-xl transition-all duration-300 transform translate-x-full opacity-0 ${
+        isSuccess 
+        ? "bg-white/95 border-emerald-100 shadow-emerald-100/50" 
+        : "bg-white/95 border-rose-100 shadow-rose-100/50"
+    }`;
+    
+    const successIcon = `<svg class="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+    const errorIcon = `<svg class="w-5 h-5 text-rose-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+    const closeIcon = `<svg class="w-4 h-4 text-slate-400 hover:text-slate-600 transition" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+    toast.innerHTML = `
+        ${isSuccess ? successIcon : errorIcon}
+        <div class="flex-1 text-sm font-semibold text-slate-800 leading-relaxed">${message}</div>
+        <button class="flex-shrink-0 focus:outline-none ml-1">${closeIcon}</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.remove("translate-x-full", "opacity-0");
+        toast.classList.add("translate-x-0", "opacity-100");
+    }, 50);
+
+    toast.querySelector("button").addEventListener("click", () => {
+        closeToast(toast);
+    });
+
+    setTimeout(() => {
+        closeToast(toast);
+    }, 4000);
+}
+
+function closeToast(toast) {
+    if (!toast.parentNode) return;
+    toast.classList.remove("translate-x-0", "opacity-100");
+    toast.classList.add("translate-x-full", "opacity-0");
+    setTimeout(() => {
+        toast.remove();
+    }, 300);
+}
