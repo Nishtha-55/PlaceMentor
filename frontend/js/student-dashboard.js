@@ -4,7 +4,7 @@ const APPLICATION_KEY = "student_applications";
 const session = JSON.parse(localStorage.getItem("placementor_session"));
 
 if (!session || !session.token || session.user.role !== "student") {
-  window.location.href = "../login.html";
+  window.location.href = "/login.html";
 }
 
 const token = session.token;
@@ -168,7 +168,7 @@ async function loadProfileCompletion() {
 function attachLogout() {
   document.getElementById("logoutBtn")?.addEventListener("click", () => {
     localStorage.clear();
-    window.location.href = "../login.html";
+    window.location.href = "/login.html";
   });
 }
 // =====================================
