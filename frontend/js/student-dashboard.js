@@ -16,7 +16,47 @@ document.addEventListener("DOMContentLoaded", () => {
 async function initDashboard() {
   showWelcome();
   await loadApplications();
+  await loadProfileCompletion();
   attachLogout();
+}
+
+async function loadProfileCompletion() {
+  try {
+    const res = await fetch(`${API_BASE}/student/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const profile = await res.json();
+
+    if (!profile) return;
+
+    const isBranchFilled = profile.branch && 
+                           profile.branch.trim() !== "" && 
+                           profile.branch.trim().toLowerCase() !== "select branch" && 
+                           profile.branch.trim().toLowerCase() !== "choose your branch";
+
+    const nameParts = (profile.name || "").trim().split(/\s+/);
+    const hasFirstName = nameParts[0] && nameParts[0].trim() !== "";
+    const hasLastName = nameParts[1] && nameParts[1].trim() !== "";
+
+    const filled = [
+      hasFirstName ? "true" : "",
+      hasLastName ? "true" : "",
+      isBranchFilled ? profile.branch.trim() : "",
+      profile.cgpa && profile.cgpa > 0 ? "true" : "",
+      profile.skills && profile.skills.length > 0 ? "true" : "",
+      profile.resume ? "true" : ""
+    ].filter(Boolean).length;
+
+    const percent = Math.floor((filled / 6) * 100);
+
+    const bar = document.getElementById("progress-bar");
+    const label = document.getElementById("completion-label");
+    if (bar) bar.style.width = percent + "%";
+    if (label) label.textContent = percent + "%";
+  } catch (err) {
+    console.error("Error loading profile completion:", err);
+  }
 }
 
 function showWelcome() {
